@@ -8,7 +8,7 @@
  * Instead, it should use Cipher class as much as possible.
  * The only exception for this rule is the deprecated TABLE method.
  *
- * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -30,6 +30,7 @@
 #ifndef ENCRYPTOR_H
 #define ENCRYPTOR_H
 
+#include <functional>
 #include <memory>
 #include "util/export.h"
 #include "cipher.h"
@@ -39,12 +40,14 @@ namespace QSS {
 class QSS_EXPORT Encryptor
 {
 public:
+    using Creator = std::function<std::unique_ptr<Encryptor>()>;
+
     /**
      * @brief Encryptor
      * @param method The encryption method in Shadowsocks convention
      * @param password The preshared password
      */
-    Encryptor(std::string method,
+    Encryptor(const std::string& method,
               const std::string& password);
 
     Encryptor(const Encryptor &) = delete;
@@ -72,24 +75,19 @@ public:
     std::string encryptAll(const std::string &);
     std::string encryptAll(const uint8_t *data, size_t length);
 
-    /**
-     * @brief reset Resets this Encryptor to initial state
-     */
-    void reset();
-
 private:
     std::string m_method;
-    const Cipher::CipherInfo cipherInfo;
-    std::string masterKey;
-    std::string incompleteChunk;
-    uint16_t incompleteLength;
+    const Cipher::CipherInfo m_cipherInfo;
+    std::string m_masterKey;
+    std::string m_incompleteChunk;
+    uint16_t m_incompleteLength;
 
     void initEncipher(std::string *header);
     void initDecipher(const char *data, size_t length, size_t *offset);
 
 protected:
-    std::unique_ptr<Cipher> enCipher;
-    std::unique_ptr<Cipher> deCipher;
+    std::unique_ptr<Cipher> m_enCipher;
+    std::unique_ptr<Cipher> m_deCipher;
 };
 
 }

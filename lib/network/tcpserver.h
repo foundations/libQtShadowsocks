@@ -26,6 +26,7 @@
 #include <QTcpServer>
 #include <list>
 #include <memory>
+#include "crypto/encryptor.h"
 #include "types/address.h"
 #include "util/export.h"
 
@@ -37,13 +38,12 @@ class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    TcpServer(std::string method,
-              std::string password,
-              int timeout,
+    TcpServer(Encryptor::Creator&& ec,
+              int m_timeout,
               bool is_local,
               bool auto_ban,
-              Address serverAddress);
-    ~TcpServer();
+              Address m_serverAddress);
+    ~TcpServer() override;
 
     TcpServer(const TcpServer &) = delete;
 
@@ -56,14 +56,13 @@ protected:
     void incomingConnection(qintptr socketDescriptor) Q_DECL_OVERRIDE;
 
 private:
-    const std::string method;
-    const std::string password;
-    const bool isLocal;
-    const bool autoBan;
-    const Address serverAddress;
-    const int timeout;
+    Encryptor::Creator m_encryptorCreator;
+    const bool m_isLocal;
+    const bool m_autoBan;
+    const Address m_serverAddress;
+    const int m_timeout;
 
-    std::list<std::shared_ptr<TcpRelay> > conList;
+    std::list<std::shared_ptr<TcpRelay> > m_conList;
 };
 
 }
